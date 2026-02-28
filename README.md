@@ -13,7 +13,7 @@
 - Member 2: [Roshna Fathima.Y] - [Ahalia School of Engineering & Technology]
 
 ### Hosted Project Link
-[mention your project hosted link here]
+https://creative-souls.onrender.com
 
 ### Project Description
 The College EventHub Portal is a web application designed to bridge the communication gap between student organizations and the campus community. It serves as a centralized digital bulletin board where students can discover upcoming fests, workshops, and seminars in real-time. The system replaces traditional, inefficient methods like physical posters or fragmented messaging apps with a modern, responsive interface that handles everything from event discovery to student registration.
