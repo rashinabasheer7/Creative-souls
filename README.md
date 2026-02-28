@@ -2,27 +2,27 @@
   <img src="./img.png" alt="Project Banner" width="100%">
 </p>
 
-# [Project Name] 🎯
+# [EventHub] 🎯
 
 ## Basic Details
 
-### Team Name: [Name]
+### Team Name: [Creative Souls]
 
 ### Team Members
-- Member 1: [Name] - [College]
-- Member 2: [Name] - [College]
+- Member 1: [Rashinamol B] - [Ahalia School of Engineering & Technology]
+- Member 2: [Roshna Fathima.Y] - [Ahalia School of Engineering & Technology]
 
 ### Hosted Project Link
 [mention your project hosted link here]
 
 ### Project Description
-[2-3 lines about what your project does]
+[The College EventHub Portal is a web application designed to bridge the communication gap between student organizations and the campus community. It serves as a centralized digital bulletin board where students can discover upcoming fests, workshops, and seminars in real-time. The system replaces traditional, inefficient methods like physical posters or fragmented messaging apps with a modern, responsive interface that handles everything from event discovery to student registration.]
 
 ### The Problem statement
-[What problem are you solving?]
+[Educational institutions often struggle with fragmented communication regarding campus events, leading to low student engagement and disorganized record-keeping. Manual registration processes via paper forms or disparate spreadsheets are prone to data entry errors and make real-time event tracking nearly impossible for administrators.]
 
 ### The Solution
-[How are you solving it?]
+[EventHub provides a centralized, a platform that automates college event workflows by integrating secure administrator controls with a real-time student registration interface. It replaces manual paperwork with a persistent SQLite database and a seamless Flask-driven UI to ensure efficient data tracking and campus-wide event visibility.]
 
 ---
 
@@ -31,25 +31,28 @@
 ### Technologies/Components Used
 
 **For Software:**
-- Languages used: [e.g., JavaScript, Python, Java]
-- Frameworks used: [e.g., React, Django, Spring Boot]
-- Libraries used: [e.g., axios, pandas, JUnit]
-- Tools used: [e.g., VS Code, Git, Docker]
+- Languages used: [Python (Backend logic), JavaScript (Frontend interactivity), HTML5/CSS3 (Structure and Styling), and SQL (Database queries)]
+- Frameworks used: [Flask (A lightweight WSGI web application framework for Python]
+- Libraries used: [SQLite3: For server-side relational data storage.Werkzeug: Specifically for security features like generate_password_hash and check_password_hash.]
+- Tools used: [VS Code (Code Editor), Google Chrome DevTools (Debugging and API testing), and Python IDLE/Terminal (Running the server).]
 
 **For Hardware:**
-- Main components: [List main components]
-- Specifications: [Technical specifications]
-- Tools required: [List tools needed]
+- Main components: [A standard workstation or laptop acting as the Localhost server]
+- Specifications: [Processor: Dual-core 2.0GHz or higher.
+.RAM: Minimum 4GB (8GB recommended for smooth multitasking).
+.Storage: At least 100MB of free space for the SQLite database file and project assets.]
+- Tools required: [Internet Connection: Required for loading external Google Fonts and CSS libraries.
+Web Browser: Any modern browser (Chrome, Firefox, or Edge) to render the UI.]
 
 ---
 
 ## Features
 
 List the key features of your project:
-- Feature 1: [Description]
-- Feature 2: [Description]
-- Feature 3: [Description]
-- Feature 4: [Description]
+- Feature 1: [Secure Admin Dashboard: A protected management area that allows authorized users to post new events with custom titles and poster images, as well as delete outdated listings.]
+- Feature 2: [Real-time Event Feed: A dynamic, visually engaging home page that automatically updates to show the latest college events stored in the database.]
+- Feature 3: [Integrated Student Registration: A seamless digital form where students can register for events by selecting their name, ID, and specific role (Participant or Volunteer)]
+- Feature 4: [Automated Records Management: A dedicated records page that pulls data directly from the SQLite database to display all student registrations in an organized table for administrative review.]
 
 ---
 
@@ -59,7 +62,20 @@ List the key features of your project:
 
 #### Installation
 ```bash
-[Installation commands - e.g., npm install, pip install -r requirements.txt]
+[Inblinker==1.9.0
+click==8.3.1
+colorama==0.4.6
+Flask==3.1.3
+flask-cors==6.0.2
+Flask-SQLAlchemy==3.1.1
+greenlet==3.3.2
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+SQLAlchemy==2.0.47
+typing_extensions==4.15.0
+Werkzeug==3.1.6
+stallation commands - e.g., npm install, pip install -r requirements.txt]
 ```
 
 #### Run
@@ -361,7 +377,7 @@ python script.py -v --format json data.json
 ## Project Demo
 
 ### Video
-[Add your demo video link here - YouTube, Google Drive, etc.]
+https://drive.google.com/file/d/1MHEsOY4DyvZPssyblWkiRoBRR-vO3bnC/view?usp=sharing
 
 *Explain what the video demonstrates - key features, user flow, technical highlights*
 
