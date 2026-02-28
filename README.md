@@ -16,13 +16,13 @@
 [mention your project hosted link here]
 
 ### Project Description
-[The College EventHub Portal is a web application designed to bridge the communication gap between student organizations and the campus community. It serves as a centralized digital bulletin board where students can discover upcoming fests, workshops, and seminars in real-time. The system replaces traditional, inefficient methods like physical posters or fragmented messaging apps with a modern, responsive interface that handles everything from event discovery to student registration.]
+The College EventHub Portal is a web application designed to bridge the communication gap between student organizations and the campus community. It serves as a centralized digital bulletin board where students can discover upcoming fests, workshops, and seminars in real-time. The system replaces traditional, inefficient methods like physical posters or fragmented messaging apps with a modern, responsive interface that handles everything from event discovery to student registration.
 
 ### The Problem statement
-[Educational institutions often struggle with fragmented communication regarding campus events, leading to low student engagement and disorganized record-keeping. Manual registration processes via paper forms or disparate spreadsheets are prone to data entry errors and make real-time event tracking nearly impossible for administrators.]
+Educational institutions often struggle with fragmented communication regarding campus events, leading to low student engagement and disorganized record-keeping. Manual registration processes via paper forms or disparate spreadsheets are prone to data entry errors and make real-time event tracking nearly impossible for administrators.
 
 ### The Solution
-[EventHub provides a centralized, a platform that automates college event workflows by integrating secure administrator controls with a real-time student registration interface. It replaces manual paperwork with a persistent SQLite database and a seamless Flask-driven UI to ensure efficient data tracking and campus-wide event visibility.]
+EventHub provides a centralized, a platform that automates college event workflows by integrating secure administrator controls with a real-time student registration interface. It replaces manual paperwork with a persistent SQLite database and a seamless Flask-driven UI to ensure efficient data tracking and campus-wide event visibility.
 
 ---
 
@@ -99,14 +99,18 @@ stallation commands - e.g., npm install, pip install -r requirements.txt]
 
 #### Screenshots (Add at least 3)
 
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+<img width="1919" height="934" alt="image" src="https://github.com/user-attachments/assets/2b8876bb-f912-447b-88f9-18476e359b62" />
+Secure Access Management: Empowering campus engagement through role-based authentication and a streamlined registration experience.
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
+<img width="1842" height="902" alt="image" src="https://github.com/user-attachments/assets/5cdd5d0e-e0be-4db9-80ab-a724e85e8c3a" />
+"Seamless User Journey: From Secure Role-Based Login to a Centralized Management Hub for Campus Events."
 
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+
+<img width="1894" height="936" alt="image" src="https://github.com/user-attachments/assets/0a4c6381-1dda-4cb5-b516-1a149fca0fe3" />
+"Secure User Onboarding: Empowering the campus community with a modern, intuitive registration flow that distinguishes between Student event-discovery and Admin management roles."
+
+<img width="1917" height="943" alt="image" src="https://github.com/user-attachments/assets/c3dad5b1-af42-4b7f-9a60-45ad198b8ac3" />
+"From Authentication to Discovery: A comprehensive overview of the EventHub journey, featuring the multi-role 'Create Account' interface and the authenticated 'Upcoming Events' dashboard."
 
 #### Diagrams
 
