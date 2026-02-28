@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub — College Event Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b0c10;
+            --surface: #13151c;
+            --surface2: #1c1f2b;
+            --border: rgba(255,255,255,0.07);
+            --accent: #6c63ff;
+            --accent2: #ff6584;
+            --accent3: #43e97b;
+            --text: #e8eaf0;
+            --muted: #6b7280;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background mesh */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80vw 60vh at 10% 0%, rgba(108,99,255,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 60vw 50vh at 90% 90%, rgba(255,101,132,0.08) 0%, transparent 55%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            height: 64px;
+            background: rgba(11,12,16,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: -0.03em;
+            color: #fff;
+        }
+        .nav-logo span { color: var(--accent); }
+
+        .nav-links {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--muted);
+            padding: 8px 16px;
+            border-radius: 99px;
+            transition: all 0.2s;
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+        }
+        .nav-btn:hover { color: var(--text); background: var(--surface2); }
+        .nav-btn.active { color: #fff; background: var(--accent); }
+        .nav-btn.admin-btn {
+            border: 1px solid rgba(108,99,255,0.3);
+            color: var(--accent);
+        }
+        .nav-btn.admin-btn:hover, .nav-btn.admin-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* ── USER CHIP ── */
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            padding: 5px 14px 5px 6px;
+            font-size: 0.8rem;
+            cursor: default;
+            white-space: nowrap;
+        }
+        .user-avatar {
+            width: 26px; height: 26px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        .user-name { color: var(--text); font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; }
+        .user-role-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            padding: 2px 7px;
+            border-radius: 99px;
+            text-transform: uppercase;
+        }
+        .role-admin { background: rgba(108,99,255,0.2); color: #a89bff; border: 1px solid rgba(108,99,255,0.3); }
+        .role-student { background: rgba(67,233,123,0.12); color: #5fffa0; border: 1px solid rgba(67,233,123,0.25); }
+        .btn-logout {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .btn-logout:hover { color: var(--accent2); background: rgba(255,101,132,0.08); }
+
+        /* ── ADMIN-ONLY VISIBILITY ── */
+        .admin-only { display: none; }
+
+        /* ── PAGES ── */
+        main { max-width: 1100px; margin: 0 auto; padding: 40px 24px; position: relative; z-index: 1; }
+        .page { display: none; }
+        .page.active { display: block; animation: fadeUp 0.35s ease; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── PAGE HEADER ── */
+        .page-header { margin-bottom: 36px; }
+        .page-header h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: #fff;
+        }
+        .page-header p { color: var(--muted); margin-top: 6px; font-size: 0.9rem; }
+
+        /* ── FEED ── */
+        #publicFeed {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .event-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+        }
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            border-color: rgba(108,99,255,0.3);
+        }
+        .event-card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+            display: block;
+        }
+        .event-card-body { padding: 20px; }
+        .event-card-body h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 14px;
+            letter-spacing: -0.02em;
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.2s;
+            font-size: 0.88rem;
+        }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            padding: 12px 20px;
+            width: 100%;
+        }
+        .btn-primary:hover:not(:disabled) { background: #7c74ff; transform: translateY(-1px); }
+
+        .btn-ghost {
+            background: rgba(108,99,255,0.12);
+            color: var(--accent);
+            padding: 10px 20px;
+            width: 100%;
+        }
+        .btn-ghost:hover { background: rgba(108,99,255,0.25); }
+
+        .btn-danger { background: rgba(255,101,132,0.15); color: var(--accent2); padding: 6px 12px; font-size: 0.78rem; border-radius: 8px; }
+        .btn-danger:hover { background: rgba(255,101,132,0.3); }
+
+        .btn-dark { background: var(--surface2); color: var(--text); padding: 11px 20px; width: 100%; border: 1px solid var(--border); }
+        .btn-dark:hover { background: #252838; border-color: var(--accent); }
+
+        /* ── FORM CARD ── */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 36px;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .form-card h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 28px;
+            letter-spacing: -0.03em;
+        }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field label { font-size: 0.75rem; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+        .input {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+        .input:focus { border-color: var(--accent); }
+        .input::placeholder { color: var(--muted); }
+
+        select.input { cursor: pointer; }
+        select.input option { background: #1c1f2b; }
+
+        /* File input */
+        .file-input-wrapper { position: relative; }
+        .file-input-wrapper input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .file-input-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface2);
+            border: 1px dashed rgba(108,99,255,0.4);
+            border-radius: 10px;
+            padding: 14px 16px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            color: var(--muted);
+            transition: border-color 0.2s;
+        }
+        .file-input-label:hover { border-color: var(--accent); color: var(--text); }
+        .file-icon { font-size: 1.2rem; }
+        #fileNameDisplay { font-size: 0.82rem; color: var(--accent); margin-top: 4px; display: none; }
+
+        /* Radio group */
+        .radio-group {
+            display: flex;
+            gap: 12px;
+        }
+        .radio-opt {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .radio-opt input[type="radio"] { display: none; }
+        .radio-opt .radio-dot {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            flex-shrink: 0;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .radio-opt input:checked ~ .radio-dot {
+            border-color: var(--accent);
+            background: var(--accent);
+            box-shadow: 0 0 0 3px rgba(108,99,255,0.2);
+        }
+        .radio-opt:has(input:checked) {
+            border-color: rgba(108,99,255,0.4);
+            background: rgba(108,99,255,0.08);
+        }
+        .radio-opt .radio-label { font-size: 0.88rem; font-weight: 500; }
+
+        /* Form spacing */
+        form .field + .field,
+        form .field + .radio-group,
+        form .radio-group + .btn,
+        form .field + .btn { margin-top: 16px; }
+        form .btn { margin-top: 24px; }
+
+        /* ── RECORDS ── */
+        .records-grid { display: grid; gap: 28px; }
+
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+        }
+        .table-header-participant { background: linear-gradient(135deg, #1a3a2a, #162e20); border-bottom: 1px solid rgba(67,233,123,0.15); }
+        .table-header-volunteer { background: linear-gradient(135deg, #3a1a1a, #2e1616); border-bottom: 1px solid rgba(255,101,132,0.15); }
+
+        .table-header-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .table-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .dot-green { background: var(--accent3); box-shadow: 0 0 6px var(--accent3); }
+        .dot-red { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+
+        .count-badge {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 99px;
+        }
+        .badge-green { background: rgba(67,233,123,0.15); color: var(--accent3); border: 1px solid rgba(67,233,123,0.2); }
+        .badge-red { background: rgba(255,101,132,0.15); color: var(--accent2); border: 1px solid rgba(255,101,132,0.2); }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            padding: 12px 20px;
+            text-align: left;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            background: rgba(255,255,255,0.02);
+        }
+        thead th:last-child { text-align: right; }
+
+        tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+        tbody td { padding: 14px 20px; font-size: 0.88rem; vertical-align: middle; }
+        tbody td:last-child { text-align: right; }
+
+        .event-tag {
+            display: inline-block;
+            background: rgba(108,99,255,0.15);
+            color: #a89bff;
+            border: 1px solid rgba(108,99,255,0.2);
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            max-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .student-name { color: #fff; font-weight: 500; }
+        .student-id { font-family: 'DM Sans', monospace; color: var(--muted); font-size: 0.8rem; }
+
+        .empty-state {
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.88rem;
+        }
+
+        /* ── ADMIN ── */
+        .admin-manage { margin-top: 32px; }
+        .admin-manage h3 {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .admin-event-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            transition: border-color 0.2s;
+            animation: fadeUp 0.25s ease;
+        }
+        .admin-event-row:hover { border-color: rgba(255,101,132,0.2); }
+        .admin-event-name { font-weight: 500; font-size: 0.9rem; }
+
+        /* ── TOAST ── */
+        #toastContainer {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            animation: slideIn 0.3s ease, fadeOut 0.4s ease 2.6s forwards;
+            max-width: 320px;
+            pointer-events: all;
+        }
+        .toast-icon { font-size: 1.1rem; flex-shrink: 0; }
+        .toast-success { border-color: rgba(67,233,123,0.3); }
+        .toast-error { border-color: rgba(255,101,132,0.3); }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(20px); }
+        }
+
+        /* ── LOADING ── */
+        .skeleton {
+            background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.4s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer { to { background-position: -200% 0; } }
+
+        .skeleton-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .skeleton-img { height: 190px; }
+        .skeleton-body { padding: 20px; }
+        .skeleton-line { height: 14px; margin-bottom: 10px; }
+        .skeleton-btn { height: 38px; margin-top: 8px; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 600px) {
+            nav { padding: 0 16px; }
+            main { padding: 24px 16px; }
+            .form-card { padding: 24px; }
+            .nav-logo { font-size: 1rem; }
+        }
+
+        /* ── DIVIDER ── */
+        .divider { height: 1px; background: var(--border); margin: 28px 0; }
+
+        /* ── CONFIRM MODAL ── */
+        .modal-backdrop {
+            position: fixed; inset: 0; z-index: 500;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 360px;
+            width: 90%;
+            animation: fadeUp 0.25s ease;
+        }
+        .modal h3 { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: #fff; margin-bottom: 10px; }
+        .modal p { color: var(--muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 24px; }
+        .modal-actions { display: flex; gap: 10px; }
+        .btn-cancel { flex: 1; background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 11px; border-radius: 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.88rem; transition: background 0.2s; }
+        .btn-cancel:hover { background: #252838; }
+        .btn-confirm-del { flex: 1; background: rgba(255,101,132,0.2); color: var(--accent2); border: 1px solid rgba(255,101,132,0.3); padding: 11px; border-radius: 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 0.88rem; transition: all 0.2s; }
+        .btn-confirm-del:hover { background: rgba(255,101,132,0.35); }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-logo">EVENT<span>HUB</span></div>
+    <div style="display:flex;align-items:center;gap:8px;overflow-x:auto;">
+        <div class="nav-links">
+            <button class="nav-btn active" onclick="showPage('feedPage', this)">Home</button>
+            <button class="nav-btn" onclick="showPage('userPage', this)">Register</button>
+            <button class="nav-btn" onclick="showPage('recordsPage', this)">Records</button>
+            <button class="nav-btn admin-btn admin-only" id="adminNavBtn" onclick="showPage('adminPage', this)">Admin</button>
+        </div>
+        <div id="userChip" class="user-chip" style="display:none;">
+            <div class="user-avatar" id="userAvatar">?</div>
+            <span class="user-name" id="userName">User</span>
+            <span class="user-role-badge" id="userRoleBadge">—</span>
+        </div>
+        <button class="btn-logout" onclick="logout()">Sign out</button>
+    </div>
+</nav>
+
+<main>
+    <!-- FEED -->
+    <section id="feedPage" class="page active">
+        <div class="page-header">
+            <h2>Upcoming Events</h2>
+            <p>Discover and join the latest college activities.</p>
+        </div>
+        <div id="publicFeed"></div>
+    </section>
+
+    <!-- REGISTER -->
+    <section id="userPage" class="page">
+        <div class="form-card">
+            <h2>Student Registration</h2>
+            <form id="userForm">
+                <div class="field">
+                    <label>Full Name</label>
+                    <input type="text" id="stuName" required placeholder="e.g. Alex Johnson" class="input">
+                </div>
+                <div class="field">
+                    <label>Student ID</label>
+                    <input type="text" id="stuId" required placeholder="e.g. STU-20240012" class="input">
+                </div>
+                <div class="field">
+                    <label>Event</label>
+                    <select id="eventDropdown" required class="input"></select>
+                </div>
+                <div class="radio-group" style="margin-top:16px;">
+                    <label class="radio-opt">
+                        <input type="radio" name="role" value="Participant" checked>
+                        <span class="radio-dot"></span>
+                        <span class="radio-label">Participant</span>
+                    </label>
+                    <label class="radio-opt">
+                        <input type="radio" name="role" value="Volunteer">
+                        <span class="radio-dot"></span>
+                        <span class="radio-label">Volunteer</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary" id="submitRegBtn">Submit Registration</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- RECORDS -->
+    <section id="recordsPage" class="page">
+        <div class="page-header">
+            <h2>Registrations</h2>
+            <p>All participants and volunteers across events.</p>
+        </div>
+        <div class="records-grid">
+            <div class="table-card">
+                <div class="table-header table-header-participant">
+                    <div class="table-header-title">
+                        <span class="table-dot dot-green"></span>
+                        Participants
+                    </div>
+                    <span class="count-badge badge-green" id="pCount">0</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Name</th>
+                                <th>Student ID</th>
+                                <th class="admin-only">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablePart"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="table-card">
+                <div class="table-header table-header-volunteer">
+                    <div class="table-header-title">
+                        <span class="table-dot dot-red"></span>
+                        Volunteers
+                    </div>
+                    <span class="count-badge badge-red" id="vCount">0</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Name</th>
+                                <th>Student ID</th>
+                                <th class="admin-only">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableVol"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="adminPage" class="page">
+        <div class="form-card" style="max-width:560px;">
+            <h2>Admin Console</h2>
+            <form id="adminForm">
+                <div class="field">
+                    <label>Event Title</label>
+                    <input type="text" id="newEventName" required placeholder="e.g. Annual Hackathon 2025" class="input">
+                </div>
+                <div class="field" style="margin-top:16px;">
+                    <label>Event Poster</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="eventPoster" accept="image/*" required>
+                        <div class="file-input-label" id="fileInputLabel">
+                            <span class="file-icon">🖼️</span>
+                            <span id="fileNameDisplay2">Click to upload poster image</span>
+                        </div>
+                    </div>
+                    <span id="fileNameDisplay"></span>
+                </div>
+                <button type="submit" class="btn btn-dark" id="publishBtn" style="margin-top:24px;">
+                    <span>🚀</span> Publish Event
+                </button>
+            </form>
+
+            <div class="admin-manage">
+                <h3>Active Events</h3>
+                <div id="adminEventsList"></div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Toast container -->
+<div id="toastContainer"></div>
+
+<!-- Confirm Modal -->
+<div id="confirmModal" style="display:none;">
+    <div class="modal-backdrop" onclick="closeModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h3 id="modalTitle">Confirm Delete</h3>
+            <p id="modalMsg">Are you sure you want to delete this?</p>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                <button class="btn-confirm-del" id="modalConfirmBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ── Auth: load current user from session ───────────────
+// If the server served this page, session is valid (Flask guards /).
+// We just fetch /api/auth/me to get the user object for the UI.
+let currentUser = null;
+
+(async function initUser() {
+    try {
+        const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        if (!res.ok) { window.location.href = '/login'; return; }
+        currentUser = await res.json();
+        applyUserUI();
+        refreshAll();
+    } catch {
+        window.location.href = '/login';
+    }
+})();
+
+function applyUserUI() {
+    if (!currentUser) return;
+    const chip = document.getElementById('userChip');
+    chip.style.display = 'flex';
+    document.getElementById('userName').textContent = currentUser.name.split(' ')[0];
+    document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+    const badge = document.getElementById('userRoleBadge');
+    badge.textContent = currentUser.role;
+    badge.className = 'user-role-badge role-' + currentUser.role;
+    if (currentUser.role === "admin") {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+    }
+}
+
+async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    window.location.href = '/login';
+}
+
+// ── State ──────────────────────────────────────────────
+let tempPosterBase64 = "";
+let pendingAction = null;
+
+// ── Navigation ─────────────────────────────────────────
+function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) btn.classList.add('active');
+    refreshAll();
+}
+
+// ── API Helper ─────────────────────────────────────────
+async function apiFetch(url, options = {}) {
+    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    try {
+        const res = await fetch(url, { ...options, headers, credentials: 'same-origin' });
+        if (res.status === 401) { window.location.href = '/login'; return null; }
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            toast('error', err.error || 'Error ' + res.status);
+            return null;
+        }
+        return await res.json();
+    } catch (err) {
+        toast('error', 'Network error. Check your connection.');
+        console.error(err);
+        return null;
+    }
+}
+
+// ── Refresh ────────────────────────────────────────────
+async function refreshAll() {
+    const [events, registrations] = await Promise.all([
+        apiFetch('/api/events'),
+        apiFetch('/api/register')
+    ]);
+    if (events)        { renderFeed(events); updateDropdown(events); renderAdminList(events); }
+    if (registrations) { renderTables(registrations); }
+}
+
+// ── Toast ──────────────────────────────────────────────
+function toast(type, message) {
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    const container = document.getElementById('toastContainer');
+    const el = document.createElement('div');
+    el.className = 'toast toast-' + type;
+    el.innerHTML = '<span class="toast-icon">' + (icons[type]||icons.info) + '</span><span>' + message + '</span>';
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 3100);
+}
+
+// ── Confirm Modal ──────────────────────────────────────
+function showModal(title, msg, onConfirm) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMsg').textContent = msg;
+    document.getElementById('confirmModal').style.display = 'block';
+    document.getElementById('modalConfirmBtn').onclick = () => { closeModal(); onConfirm(); };
+}
+function closeModal() { document.getElementById('confirmModal').style.display = 'none'; }
+
+// ── Feed ───────────────────────────────────────────────
+function renderFeed(events) {
+    const feed = document.getElementById('publicFeed');
+    if (!events.length) {
+        feed.innerHTML = '<div class="empty-state"><div style="font-size:2.5rem;margin-bottom:12px;">📅</div><div>No events posted yet.</div><div style="font-size:0.8rem;margin-top:4px;">Check back soon or ask an admin to publish one.</div></div>';
+        return;
+    }
+    feed.innerHTML = events.map(ev =>
+        '<div class="event-card">' +
+            '<img src="' + escapeHtml(ev.poster) + '" alt="' + escapeHtml(ev.name) + '" loading="lazy">' +
+            '<div class="event-card-body">' +
+                '<h3>' + escapeHtml(ev.name) + '</h3>' +
+                '<button class="btn btn-ghost" onclick="registerForEvent(' + JSON.stringify(ev.name) + ')">Register Now →</button>' +
+            '</div>' +
+        '</div>'
+    ).join('');
+}
+
+function registerForEvent(name) {
+    const drop = document.getElementById('eventDropdown');
+    const match = Array.from(drop.options).find(o => o.value === name);
+    if (match) drop.value = match.value;
+    showPage('userPage', document.querySelectorAll('.nav-btn')[1]);
+}
+
+function updateDropdown(events) {
+    const drop = document.getElementById('eventDropdown');
+    const current = drop.value;
+    drop.innerHTML = events.length
+        ? events.map(ev => '<option value="' + escapeHtml(ev.name) + '">' + escapeHtml(ev.name) + '</option>').join('')
+        : '<option disabled>No events available</option>';
+    if (current && Array.from(drop.options).some(o => o.value === current)) drop.value = current;
+}
+
+// ── Admin ──────────────────────────────────────────────
+document.getElementById('eventPoster').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast('error', 'File too large. Max 5MB.'); e.target.value = ''; return; }
+    document.getElementById('fileNameDisplay2').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = (ev) => tempPosterBase64 = ev.target.result;
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('adminForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!tempPosterBase64) { toast('error', 'Please select a poster image.'); return; }
+    const btn = document.getElementById('publishBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> Publishing...';
+    const result = await apiFetch('/api/events', {
+        method: 'POST',
+        body: JSON.stringify({ name: document.getElementById('newEventName').value, poster: tempPosterBase64 })
+    });
+    btn.disabled = false;
+    btn.innerHTML = '<span>🚀</span> Publish Event';
+    if (result) {
+        e.target.reset();
+        tempPosterBase64 = '';
+        document.getElementById('fileNameDisplay2').textContent = 'Click to upload poster image';
+        toast('success', 'Event published successfully!');
+        refreshAll();
+    }
+});
+
+function renderAdminList(events) {
+    const list = document.getElementById('adminEventsList');
+    if (!events.length) { list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:12px 0;">No active events.</div>'; return; }
+    list.innerHTML = events.map(ev =>
+        '<div class="admin-event-row">' +
+            '<span class="admin-event-name">' + escapeHtml(ev.name) + '</span>' +
+            '<button class="btn btn-danger" onclick="confirmDeleteEvent(' + ev.id + ')">Remove</button>' +
+        '</div>'
+    ).join('');
+}
+
+async function confirmDeleteEvent(id) {
+    showModal('Delete Event', 'This will remove the event and cannot be undone. Continue?', () => deleteEvent(id));
+}
+async function deleteEvent(id) {
+    const result = await apiFetch('/api/events/' + id, { method: 'DELETE' });
+    if (result !== null) { toast('success', 'Event removed.'); refreshAll(); }
+}
+
+// ── Registration ───────────────────────────────────────
+document.getElementById('userForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const drop = document.getElementById('eventDropdown');
+    if (!drop.options.length || drop.options[0].disabled) { toast('error', 'No events available to register for.'); return; }
+    const btn = document.getElementById('submitRegBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    const reg = {
+        name:  document.getElementById('stuName').value.trim(),
+        id:    document.getElementById('stuId').value.trim(),
+        event: drop.value,
+        role:  document.querySelector('input[name="role"]:checked').value
+    };
+    const result = await apiFetch('/api/register', { method: 'POST', body: JSON.stringify(reg) });
+    btn.disabled = false;
+    btn.textContent = 'Submit Registration';
+    if (result) {
+        e.target.reset();
+        toast('success', 'Registration successful as ' + reg.role + '!');
+        showPage('recordsPage', document.querySelectorAll('.nav-btn')[2]);
+    }
+});
+
+// ── Records ────────────────────────────────────────────
+function renderTables(registrations) {
+    const tPart = document.getElementById('tablePart');
+    const tVol  = document.getElementById('tableVol');
+    let pc = 0, vc = 0;
+    const partRows = [], volRows = [];
+    registrations.forEach(r => {
+        const row =
+            '<tr>' +
+                '<td><span class="event-tag" title="' + escapeHtml(r.event) + '">' + escapeHtml(r.event) + '</span></td>' +
+                '<td><span class="student-name">' + escapeHtml(r.name) + '</span></td>' +
+                '<td><span class="student-id">'  + escapeHtml(r.student_id) + '</span></td>' +
+                `${currentUser.role === "admin" ? `<td><button class="btn btn-danger" onclick="confirmDeleteReg(' + r.id + ')">Remove</button></td>` : ``}` +
+            '</tr>';
+        if (r.role === 'Participant') { partRows.push(row); pc++; }
+        else                          { volRows.push(row);  vc++; }
+    });
+    tPart.innerHTML = partRows.length ? partRows.join('') : '<tr><td colspan="4" class="empty-state">No participants yet.</td></tr>';
+    tVol.innerHTML  = volRows.length  ? volRows.join('')  : '<tr><td colspan="4" class="empty-state">No volunteers yet.</td></tr>';
+    document.getElementById('pCount').textContent = pc;
+    document.getElementById('vCount').textContent = vc;
+}
+
+async function confirmDeleteReg(id) {
+    showModal('Remove Registration', 'Remove this student registration?', () => deleteReg(id));
+}
+async function deleteReg(id) {
+    const result = await apiFetch('/api/register/' + id, { method: 'DELETE' });
+    if (result !== null) { toast('success', 'Registration removed.'); refreshAll(); }
+}
+
+// ── Security ───────────────────────────────────────────
+function escapeHtml(str) {
+    if (typeof str !== 'string') str = String(str ?? '');
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+</body>
+</html>
